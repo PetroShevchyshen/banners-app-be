@@ -14,6 +14,7 @@ import type {
   CreateBannerDto,
   UpdateBannerDto,
 } from './types/banners.dto';
+import { Base64ImageValidationPipe } from '../common/pipe/base64-image-validation.pipe';
 
 @Controller('banners')
 export class BannersController {
@@ -30,14 +31,16 @@ export class BannersController {
   }
 
   @Post()
-  async create(@Body() createBannerDto: CreateBannerDto): Promise<Banner> {
-    return await this.bannersService.create(createBannerDto);
+  async create(
+    @Body(Base64ImageValidationPipe) dto: CreateBannerDto,
+  ): Promise<Banner> {
+    return await this.bannersService.create(dto);
   }
 
   @Put(':id')
   async update(
     @Param('id') id: string,
-    @Body() updateBannerDto: UpdateBannerDto,
+    @Body(Base64ImageValidationPipe) updateBannerDto: UpdateBannerDto,
   ): Promise<Banner> {
     return await this.bannersService.update(id, updateBannerDto);
   }

@@ -9,22 +9,30 @@ import type {
   UpdateBannerDto,
 } from './types/banners.dto';
 
-const DATA_FILE = path.join(process.cwd(), 'banners.json');
-
 @Injectable()
 export class BannerService {
+  private readonly dbPath = path.join(process.cwd(), 'db', 'banners.json');
+
   private async readBanners(): Promise<BannersDB> {
     try {
-      const raw = await fs.readFile(DATA_FILE, 'utf-8');
+      const raw = await fs.readFile(this.dbPath, 'utf-8');
       return JSON.parse(raw) as BannersDB;
     } catch (err: any) {
-      if (err.code === 'ENOENT') return { data: [] };
+      if (err.code === 'ENOENT') return this.initializeDb();
       throw err;
     }
   }
 
+  private async initializeDb(): Promise<BannersDB> {
+    const dbDir = path.dirname(this.dbPath);
+    await fs.mkdir(dbDir, { recursive: true });
+    const initialData = { data: [] };
+    await this.writeBanners(initialData);
+    return initialData;
+  }
+
   private async writeBanners(banners: BannersDB): Promise<void> {
-    await fs.writeFile(DATA_FILE, JSON.stringify(banners, null, 2), 'utf-8');
+    await fs.writeFile(this.dbPath, JSON.stringify(banners, null, 2), 'utf-8');
   }
 
   async findAll(): Promise<BannersDB> {
